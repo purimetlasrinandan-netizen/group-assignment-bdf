@@ -134,3 +134,4 @@ module.exports = {
   closeDb,
   DB_FILE
 };
+

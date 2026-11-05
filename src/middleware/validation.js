@@ -186,3 +186,4 @@ module.exports = {
   validatePhotographerUpdate,
   validateRentalCreate
 };
+

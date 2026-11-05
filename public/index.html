@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LensLab Studio — Live Demo & API Explorer</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 24px; line-height: 1.5; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    header { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 28px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    header h1 { font-size: 28px; margin-bottom: 6px; }
+    header p { opacity: 0.9; font-size: 15px; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-right: 8px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px; }
+    .card { background: var(--card-bg); border-radius: 10px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card h2 { font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    
+    .twist-box { background: #fffbeb; border: 2px solid #f59e0b; border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+    .twist-box h2 { color: #b45309; font-size: 18px; margin-bottom: 10px; }
+    
+    .btn { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-success { background: var(--success); }
+    .btn-danger { background: var(--danger); }
+    .btn-warning { background: var(--warning); }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #475569; }
+    input, select { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+    input:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+    pre { background: #0f172a; color: #f8fafc; padding: 14px; border-radius: 8px; font-size: 13px; overflow-x: auto; max-height: 250px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th, td { padding: 8px 10px; border: 1px solid var(--border); text-align: left; }
+    th { background: #f1f5f9; font-weight: 600; }
+    
+    .status-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .status-active { background: #fef3c7; color: #92400e; }
+    .status-returned { background: #dcfce7; color: #166534; }
+    .status-code { font-family: monospace; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+    .sc-200 { background: #dcfce7; color: #15803d; }
+    .sc-201 { background: #dbeafe; color: #1d4ed8; }
+    .sc-400 { background: #ffedd5; color: #c2410c; }
+    .sc-409 { background: #fee2e2; color: #b91c1c; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div>
+      <span class="badge">Theme 5: Camera Rental</span>
+      <span class="badge">Group ST-CSE2D-G05</span>
+      <span class="badge">BDF Assignment</span>
+    </div>
+    <h1 style="margin-top: 8px;">📷 LensLab Studio — Live API Output</h1>
+    <p>"Our cameras are lent by phone call. Two photographers turned up for the same camera on the same day. Please build us a system that fixes this."</p>
+  </header>
+
+  <!-- TWIST DEMO SECTION (CRITICAL FOR LIVE DEMO) -->
+  <div class="twist-box">
+    <h2>🎯 YOUR TWIST: Return Flow (Demo Tests 1, 2, 3)</h2>
+    <p style="font-size: 14px; margin-bottom: 12px; color: #78350f;">
+      Test the 3 twist conditions mandated by the assignment brief with one click:
+    </p>
+    <div class="btn-group">
+      <button class="btn btn-success" onclick="runTwistTest1()">Test 1: Return Rental 1 (Expect 200)</button>
+      <button class="btn btn-danger" onclick="runTwistTest2()">Test 2: Return Again (Expect 409 "Already returned")</button>
+      <button class="btn btn-primary" onclick="runTwistTest3()">Test 3: GET /photographers/1/history (Expect 200)</button>
+    </div>
+    <div style="margin-top: 14px;">
+      <div style="font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #92400e;">Live Twist Response Output:</div>
+      <div id="twist-status" style="margin-bottom: 6px;"></div>
+      <pre id="twist-output">// Click any button above to see the live server response</pre>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- CAMERAS SECTION -->
+    <div class="card">
+      <h2>
+        <span>🎥 Cameras & Search</span>
+        <button class="btn" style="font-size: 12px; padding: 4px 8px;" onclick="loadCameras()">Refresh</button>
+      </h2>
+      <div class="form-group">
+        <label>Search by Query Parameter (?kind=...)</label>
+        <select id="camera-filter" onchange="loadCameras()">
+          <option value="">All Kinds (GET /cameras)</option>
+          <option value="DSLR">DSLR (?kind=DSLR)</option>
+          <option value="Mirrorless">Mirrorless (?kind=Mirrorless)</option>
+          <option value="Cinema">Cinema (?kind=Cinema)</option>
+          <option value="Action">Action (?kind=Action)</option>
+        </select>
+      </div>
+
+      <div style="max-height: 220px; overflow-y: auto;">
+        <table id="cameras-table">
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Kind</th><th>Rate</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--border);" />
+      <h3 style="font-size: 14px; margin-bottom: 8px;">Add Camera (Test Validation)</h3>
+      <div style="display: flex; gap: 8px;">
+        <input id="new-cam-name" placeholder="Camera Name (leave blank to test 400)" />
+        <select id="new-cam-kind" style="width: 140px;">
+          <option value="Mirrorless">Mirrorless</option>
+          <option value="DSLR">DSLR</option>
+          <option value="Cinema">Cinema</option>
+        </select>
+        <button class="btn" onclick="addCamera()">Add</button>
+      </div>
+      <div id="add-cam-result" style="margin-top: 8px; font-size: 12px;"></div>
+    </div>
+
+    <!-- JOIN ENDPOINT & DOUBLE BOOKING PREVENTION -->
+    <div class="card">
+      <h2>
+        <span>🔗 Join Endpoint: Rentals</span>
+        <button class="btn" style="font-size: 12px; padding: 4px 8px;" onclick="loadRentals()">Refresh</button>
+      </h2>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 8px;">
+        Endpoint <code>GET /rentals/details</code> joins Rentals with Photographer Name and Camera Name:
+      </p>
+      <div style="max-height: 220px; overflow-y: auto;">
+        <table id="rentals-table">
+          <thead>
+            <tr><th>ID</th><th>Photographer</th><th>Camera</th><th>Date</th><th>Status</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--border);" />
+      <h3 style="font-size: 14px; margin-bottom: 6px;">Test Double-Booking Prevention (Client Fix)</h3>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 8px;">
+        Try to rent Camera ID 3 (which is already rented out). Server will reject with 409 Conflict:
+      </p>
+      <button class="btn btn-warning" onclick="testDoubleBooking()">Attempt Booking on Rented Camera</button>
+      <div id="double-booking-result" style="margin-top: 8px; font-size: 12px;"></div>
+    </div>
+  </div>
+
+  <!-- PHOTOGRAPHERS SECTION -->
+  <div class="card">
+    <h2>
+      <span>👤 Photographers</span>
+      <button class="btn" style="font-size: 12px; padding: 4px 8px;" onclick="loadPhotographers()">Refresh</button>
+    </h2>
+    <div style="max-height: 180px; overflow-y: auto;">
+      <table id="photographers-table">
+        <thead>
+          <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>History</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // On load
+  window.addEventListener('DOMContentLoaded', () => {
+    loadCameras();
+    loadRentals();
+    loadPhotographers();
+  });
+
+  // Twist Test 1: Return a rental (200)
+  async function runTwistTest1() {
+    try {
+      const res = await fetch('/rentals/1/return', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ return_date: new Date().toISOString().split('T')[0] })
+      });
+      const data = await res.json();
+      displayTwistOutput(res.status, 'Test 1: POST /rentals/1/return', data);
+      loadRentals();
+    } catch (err) {
+      displayTwistOutput(500, 'Error', { error: err.message });
+    }
+  }
+
+  // Twist Test 2: Return it again (409 Already returned)
+  async function runTwistTest2() {
+    try {
+      const res = await fetch('/rentals/1/return', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ return_date: new Date().toISOString().split('T')[0] })
+      });
+      const data = await res.json();
+      displayTwistOutput(res.status, 'Test 2: POST /rentals/1/return (Duplicate)', data);
+    } catch (err) {
+      displayTwistOutput(500, 'Error', { error: err.message });
+    }
+  }
+
+  // Twist Test 3: List photographer 1 history (200)
+  async function runTwistTest3() {
+    try {
+      const res = await fetch('/photographers/1/history');
+      const data = await res.json();
+      displayTwistOutput(res.status, 'Test 3: GET /photographers/1/history', data);
+    } catch (err) {
+      displayTwistOutput(500, 'Error', { error: err.message });
+    }
+  }
+
+  function displayTwistOutput(status, label, data) {
+    const statusDiv = document.getElementById('twist-status');
+    const scClass = status === 200 ? 'sc-200' : (status === 201 ? 'sc-201' : (status === 409 ? 'sc-409' : 'sc-400'));
+    statusDiv.innerHTML = `<span class="status-code ${scClass}">HTTP ${status}</span> <strong>${label}</strong>`;
+    document.getElementById('twist-output').textContent = JSON.stringify(data, null, 2);
+  }
+
+  // Load Cameras with Query Parameter filter
+  async function loadCameras() {
+    const kind = document.getElementById('camera-filter').value;
+    const url = kind ? `/cameras?kind=${encodeURIComponent(kind)}` : '/cameras';
+    const res = await fetch(url);
+    const cameras = await res.json();
+    const tbody = document.querySelector('#cameras-table tbody');
+    tbody.innerHTML = '';
+    cameras.forEach(cam => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${cam.id}</td><td><strong>${cam.name}</strong></td><td><span class="badge" style="background:#e0f2fe; color:#0369a1;">${cam.kind}</span></td><td>\$${cam.daily_rate}/day</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Add camera
+  async function addCamera() {
+    const name = document.getElementById('new-cam-name').value;
+    const kind = document.getElementById('new-cam-kind').value;
+    const resultDiv = document.getElementById('add-cam-result');
+
+    const res = await fetch('/cameras', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name || undefined, kind: kind })
+    });
+    const data = await res.json();
+    if (res.status === 201) {
+      resultDiv.innerHTML = `<span class="status-code sc-201">HTTP 201</span> Added: ${data.name} (ID: ${data.id})`;
+      document.getElementById('new-cam-name').value = '';
+      loadCameras();
+    } else {
+      resultDiv.innerHTML = `<span class="status-code sc-400">HTTP 400</span> ${data.message}`;
+    }
+  }
+
+  // Load Rentals (Join endpoint)
+  async function loadRentals() {
+    const res = await fetch('/rentals/details');
+    const rentals = await res.json();
+    const tbody = document.querySelector('#rentals-table tbody');
+    tbody.innerHTML = '';
+    rentals.forEach(r => {
+      const isReturned = r.return_date !== null;
+      const statusPill = isReturned 
+        ? `<span class="status-pill status-returned">Returned (${r.return_date})</span>` 
+        : `<span class="status-pill status-active">Active (On Loan)</span>`;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>#${r.id}</td><td><strong>${r.photographer_name}</strong></td><td>${r.camera_name}</td><td>${r.rental_date}</td><td>${statusPill}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Test double booking
+  async function testDoubleBooking() {
+    const resultDiv = document.getElementById('double-booking-result');
+    const res = await fetch('/rentals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        photographer_id: 1,
+        camera_id: 3, // actively rented in seed
+        rental_date: '2026-11-10'
+      })
+    });
+    const data = await res.json();
+    if (res.status === 409) {
+      resultDiv.innerHTML = `<span class="status-code sc-409">HTTP 409 Conflict</span> <strong>Prevented Double-Booking!</strong><br><small>${data.message}</small>`;
+    } else {
+      resultDiv.innerHTML = `<span class="status-code sc-200">HTTP ${res.status}</span> ${JSON.stringify(data)}`;
+    }
+  }
+
+  // Load Photographers
+  async function loadPhotographers() {
+    const res = await fetch('/photographers');
+    const list = await res.json();
+    const tbody = document.querySelector('#photographers-table tbody');
+    tbody.innerHTML = '';
+    list.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${p.id}</td><td><strong>${p.name}</strong></td><td>${p.email}</td><td>${p.phone}</td><td><button class="btn" style="font-size:11px; padding:2px 8px;" onclick="viewHistory(${p.id})">View History</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function viewHistory(id) {
+    fetch(`/photographers/${id}/history`)
+      .then(r => r.json())
+      .then(d => {
+        displayTwistOutput(200, `GET /photographers/${id}/history`, d);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+  }
+</script>
+
+</body>
+</html>

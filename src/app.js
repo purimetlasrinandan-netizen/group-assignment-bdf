@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const camerasRouter = require('./routes/cameras');
 const photographersRouter = require('./routes/photographers');
@@ -10,6 +11,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static frontend dashboard for live visual demo
+app.use(express.static(path.join(__dirname, '../public')));
+
 // Basic CORS header middleware
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -21,8 +25,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Welcome / Health check route
-app.get('/', (req, res) => {
+// Welcome / Health check route (returns JSON metadata when queried with Accept: application/json)
+app.get('/api', (req, res) => {
   res.status(200).json({
     project: 'LensLab Studio - Camera Rental System',
     theme: 'Theme 5 of 30 · Camera rental',
@@ -68,3 +72,4 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 module.exports = app;
+

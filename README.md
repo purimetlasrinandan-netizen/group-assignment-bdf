@@ -265,3 +265,4 @@ According to the Client Brief specification, the project is structured into 6 in
 #### Member 6 (Postman and README):
 - **Q**: *How are tests automated inside Postman?*
 - **A**: "In the Postman collection under the **Tests** tab of each request, we use `pm.test()` and `pm.expect()` assertions verifying status codes (200, 201, 400, 404, 409) and verifying response JSON properties such as `already returned` and history contents."
+
