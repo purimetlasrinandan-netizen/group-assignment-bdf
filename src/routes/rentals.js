@@ -185,8 +185,8 @@ router.post('/:id/return', async (req, res, next) => {
     }
 
     // Set return_date (use provided return_date or current date)
-    const returnDate = req.body && req.body.return_date 
-      ? req.body.return_date 
+    const returnDate = req.body && req.body.return_date
+      ? req.body.return_date
       : new Date().toISOString().split('T')[0];
 
     await db.run('UPDATE rentals SET return_date = ? WHERE id = ?', [returnDate, id]);
