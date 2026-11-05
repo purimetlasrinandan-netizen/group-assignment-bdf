@@ -1,5 +1,6 @@
 const app = require('./app');
-const { initDb } = require('./database/db');
+const { initDb, get } = require('./database/db');
+const { seed } = require('./database/seed');
 
 const PORT = process.env.PORT || 3000;
 
@@ -8,6 +9,13 @@ async function startServer() {
     // Ensure SQLite database schema is initialized
     await initDb();
     console.log('✓ SQLite Database initialized successfully.');
+
+    // Auto-seed if database is empty (e.g. on fresh deployment like Render/Railway)
+    const cameraCount = await get('SELECT COUNT(*) as count FROM cameras');
+    if (!cameraCount || cameraCount.count === 0) {
+      console.log('Database empty, auto-seeding demo data...');
+      await seed();
+    }
 
     app.listen(PORT, () => {
       console.log(`====================================================`);
