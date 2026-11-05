@@ -4,6 +4,7 @@ const camerasRouter = require('./routes/cameras');
 const photographersRouter = require('./routes/photographers');
 const rentalsRouter = require('./routes/rentals');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const { seed } = require('./database/seed');
 
 const app = express();
 
@@ -23,6 +24,16 @@ app.use((req, res, next) => {
     return res.sendStatus(200);
   }
   next();
+});
+
+// Endpoint to quickly reset demo data anytime
+app.post('/api/reset', async (req, res, next) => {
+  try {
+    await seed();
+    res.status(200).json({ message: 'Database reset to fresh demo seed state successfully.' });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Welcome / Health check route (returns JSON metadata when queried with Accept: application/json)

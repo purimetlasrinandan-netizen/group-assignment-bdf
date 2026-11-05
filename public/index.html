@@ -74,19 +74,26 @@
 
   <!-- TWIST DEMO SECTION (CRITICAL FOR LIVE DEMO) -->
   <div class="twist-box">
-    <h2>🎯 YOUR TWIST: Return Flow (Demo Tests 1, 2, 3)</h2>
-    <p style="font-size: 14px; margin-bottom: 12px; color: #78350f;">
-      Test the 3 twist conditions mandated by the assignment brief with one click:
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <h2>🎯 YOUR TWIST: Return Flow (Demo Tests 1, 2, 3)</h2>
+      <button class="btn btn-warning" onclick="resetDemoData()" style="font-size: 13px;">🔄 Reset Demo Data (Fresh State)</button>
+    </div>
+    <p style="font-size: 13px; margin: 8px 0 12px 0; color: #78350f;">
+      <strong>Note:</strong> These tests run in a <strong>one-time sequence</strong>:
+      <br>1️⃣ <strong>Test 1</strong> marks Rental 1 as returned (<span class="status-code sc-200">200 OK</span>).
+      <br>2️⃣ <strong>Test 2</strong> attempts to return it again (<span class="status-code sc-409">409 Conflict "Already returned"</span>).
+      <br>3️⃣ <strong>Test 3</strong> lists it in history (<span class="status-code sc-200">200 OK</span>).
+      <br><em>(If you already ran Test 1, Rental 1 is already returned! Click <strong>"Reset Demo Data"</strong> to reset it back to active!)</em>
     </p>
     <div class="btn-group">
-      <button class="btn btn-success" onclick="runTwistTest1()">Test 1: Return Rental 1 (Expect 200)</button>
-      <button class="btn btn-danger" onclick="runTwistTest2()">Test 2: Return Again (Expect 409 "Already returned")</button>
-      <button class="btn btn-primary" onclick="runTwistTest3()">Test 3: GET /photographers/1/history (Expect 200)</button>
+      <button class="btn btn-success" onclick="runTwistTest1()">Step 1: Test 1 (Return Rental 1 -> Expect 200)</button>
+      <button class="btn btn-danger" onclick="runTwistTest2()">Step 2: Test 2 (Return Again -> Expect 409)</button>
+      <button class="btn btn-primary" onclick="runTwistTest3()">Step 3: Test 3 (Photographer 1 History -> Expect 200)</button>
     </div>
     <div style="margin-top: 14px;">
       <div style="font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #92400e;">Live Twist Response Output:</div>
       <div id="twist-status" style="margin-bottom: 6px;"></div>
-      <pre id="twist-output">// Click any button above to see the live server response</pre>
+      <pre id="twist-output">// Click "Reset Demo Data" then "Step 1: Test 1" to see 200 OK</pre>
     </div>
   </div>
 
@@ -183,6 +190,23 @@
     loadRentals();
     loadPhotographers();
   });
+
+  // Reset Demo Data
+  async function resetDemoData() {
+    try {
+      const res = await fetch('/api/reset', { method: 'POST' });
+      const data = await res.json();
+      displayTwistOutput(200, 'Reset Complete', {
+        status: 'Success',
+        message: 'Database reset to initial seed! Rental 1 is now active. Click Step 1 to return it (200).'
+      });
+      loadRentals();
+      loadCameras();
+      loadPhotographers();
+    } catch (err) {
+      displayTwistOutput(500, 'Reset Error', { error: err.message });
+    }
+  }
 
   // Twist Test 1: Return a rental (200)
   async function runTwistTest1() {
@@ -331,3 +355,4 @@
 
 </body>
 </html>
+
