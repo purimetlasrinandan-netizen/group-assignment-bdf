@@ -1,0 +1,9 @@
+node_modules/
+lenslab.db
+tests/test_lenslab.db
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db

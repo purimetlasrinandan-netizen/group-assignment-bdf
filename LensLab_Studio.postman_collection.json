@@ -1,0 +1,718 @@
+{
+  "info": {
+    "_postman_id": "a9d56f18-7b94-4b53-b230-6d654bf1c1a9",
+    "name": "LensLab Studio - Camera Rental API (ST-CSE2D-G05)",
+    "description": "Comprehensive Postman collection for BDF Group Assignment: LensLab Studio (Theme 5: Camera rental). Includes CRUD, search, validation, JOIN endpoint, and the Twist Return Flow (Tests 1, 2, 3).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00. System & Health",
+      "item": [
+        {
+          "name": "API Welcome & Route Index",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            },
+            "description": "Returns API metadata, theme info, and available routes."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01. Cameras (CRUD, Validation, Search)",
+      "item": [
+        {
+          "name": "Get All Cameras",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(Array.isArray(jsonData)).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cameras",
+              "host": ["{{baseUrl}}"],
+              "path": ["cameras"]
+            },
+            "description": "Fetches all camera models in the studio inventory."
+          },
+          "response": []
+        },
+        {
+          "name": "Search Cameras by Kind (Query Parameter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"All returned cameras match requested kind\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    jsonData.forEach(function(cam) {",
+                  "        pm.expect(cam.kind.toLowerCase()).to.eql(\"dslr\");",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cameras?kind=DSLR",
+              "host": ["{{baseUrl}}"],
+              "path": ["cameras"],
+              "query": [
+                {
+                  "key": "kind",
+                  "value": "DSLR",
+                  "description": "Filter cameras by type: DSLR, Mirrorless, Cinema, etc."
+                }
+              ]
+            },
+            "description": "Requirement: Search by a query parameter, for example cameras by kind."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Camera by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns correct camera\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.eql(1);",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData).to.have.property('kind');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cameras/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["cameras", "1"]
+            },
+            "description": "Requirement: Get one camera."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Camera (Validation Success)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"New camera object returned with id\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.name).to.eql(\"Sony FX3 Cinema Line\");",
+                  "    pm.expect(jsonData.kind).to.eql(\"Cinema\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sony FX3 Cinema Line\",\n  \"kind\": \"Cinema\",\n  \"daily_rate\": 85.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cameras",
+              "host": ["{{baseUrl}}"],
+              "path": ["cameras"]
+            },
+            "description": "Requirement: Add camera with validation. Returns 201."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Camera (Validation Failure - Missing Kind)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Error message is returned\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.eql(\"Validation failed\");",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Incomplete Camera Entry\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cameras",
+              "host": ["{{baseUrl}}"],
+              "path": ["cameras"]
+            },
+            "description": "Requirement: Validation on add with a clear error message."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Camera",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Camera was updated\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql(\"Canon EOS 5D Mark IV Pro\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Canon EOS 5D Mark IV Pro\",\n  \"daily_rate\": 60.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cameras/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["cameras", "2"]
+            },
+            "description": "Requirement: Update camera with right status code."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Camera",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cameras/6",
+              "host": ["{{baseUrl}}"],
+              "path": ["cameras", "6"]
+            },
+            "description": "Requirement: Delete camera with right status code."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Camera - 404 Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cameras/9999",
+              "host": ["{{baseUrl}}"],
+              "path": ["cameras", "9999"]
+            },
+            "description": "Validates 404 status code when camera does not exist."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02. Photographers",
+      "item": [
+        {
+          "name": "Get All Photographers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/photographers",
+              "host": ["{{baseUrl}}"],
+              "path": ["photographers"]
+            },
+            "description": "Retrieve list of all registered photographers."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Photographer by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/photographers/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["photographers", "1"]
+            },
+            "description": "Fetch details of photographer ID 1."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Photographer (Validation Success)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Meera Rajput\",\n  \"email\": \"meera.r@lenslab.com\",\n  \"phone\": \"+91-9876543220\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/photographers",
+              "host": ["{{baseUrl}}"],
+              "path": ["photographers"]
+            },
+            "description": "Add a new photographer with valid fields."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Photographer (Validation Failure - Bad Email)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Format User\",\n  \"email\": \"invalid-email-address\",\n  \"phone\": \"9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/photographers",
+              "host": ["{{baseUrl}}"],
+              "path": ["photographers"]
+            },
+            "description": "Validation error demonstration for invalid email."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03. Rentals & Join Endpoint",
+      "item": [
+        {
+          "name": "Join Endpoint: Rentals with Photographer & Camera Names",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Each rental contains photographer_name and camera_name\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.length).to.be.above(0);",
+                  "    jsonData.forEach(function(r) {",
+                  "        pm.expect(r).to.have.property('photographer_name');",
+                  "        pm.expect(r).to.have.property('camera_name');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rentals/details",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals", "details"]
+            },
+            "description": "Requirement: One join endpoint: rentals with the photographer name and the camera name."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Rentals (Standard Route with Join)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rentals",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals"]
+            },
+            "description": "Returns all rentals list with photographer and camera details joined."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Rental (Available Camera)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"photographer_id\": 2,\n  \"camera_id\": 2,\n  \"rental_date\": \"2026-11-10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rentals",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals"]
+            },
+            "description": "Create a new camera rental for an available camera."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Rental (Double-Booking Conflict Prevention)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 409 Conflict\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Returns error that camera is already rented out\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.eql(\"Conflict\");",
+                  "    pm.expect(jsonData.message).to.include(\"already rented out\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"photographer_id\": 3,\n  \"camera_id\": 3,\n  \"rental_date\": \"2026-11-10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rentals",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals"]
+            },
+            "description": "Fixes Client Brief Problem: Two photographers turned up for the same camera. Fails with 409 because camera 3 is currently rented out."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04. Twist: Return Flow (Tests 1, 2, 3)",
+      "item": [
+        {
+          "name": "Twist Test 1: Return a rental (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Test 1 Passed: Return a rental -> Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Return date is set on rental\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('rental');",
+                  "    pm.expect(jsonData.rental.return_date).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"return_date\": \"2026-11-05\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rentals/1/return",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals", "1", "return"]
+            },
+            "description": "Twist Test 1: POST /rentals/:id/return sets a return date. Returns 200."
+          },
+          "response": []
+        },
+        {
+          "name": "Twist Test 2: Return it again (409 Conflict)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Test 2 Passed: Return it again -> Status code is 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Returns exact message 'Already returned'\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message || jsonData.error).to.eql(\"Already returned\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"return_date\": \"2026-11-06\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rentals/1/return",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals", "1", "return"]
+            },
+            "description": "Twist Test 2: Returning twice gets 409 and the message 'Already returned'."
+          },
+          "response": []
+        },
+        {
+          "name": "Twist Test 3: Photographer Return History (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Test 3 Passed: GET /photographers/1/history -> Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returned rental is listed in history\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('history');",
+                  "    pm.expect(Array.isArray(jsonData.history)).to.be.true;",
+                  "    pm.expect(jsonData.history.length).to.be.above(0);",
+                  "    var foundRental1 = jsonData.history.find(function(item) { return item.rental_id === 1; });",
+                  "    pm.expect(foundRental1).to.not.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/photographers/1/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["photographers", "1", "history"]
+            },
+            "description": "Twist Test 3: GET /photographers/:id/history lists that photographer's returned rentals. Returns 200, it is listed."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

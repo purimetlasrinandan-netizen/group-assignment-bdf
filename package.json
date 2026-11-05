@@ -1,0 +1,28 @@
+{
+  "name": "lenslab-studio-bdf",
+  "version": "1.0.0",
+  "description": "LensLab Studio - Camera Rental Backend API (ST-CSE2D-G05)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/database/seed.js",
+    "test": "node --test tests/api.test.js"
+  },
+  "keywords": [
+    "express",
+    "sqlite3",
+    "rest-api",
+    "camera-rental",
+    "bdf"
+  ],
+  "author": "Sai Siva Teja & Group ST-CSE2D-G05",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}
