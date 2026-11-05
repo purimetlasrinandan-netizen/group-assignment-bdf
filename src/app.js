@@ -36,6 +36,18 @@ app.post('/api/reset', async (req, res, next) => {
   }
 });
 
+// Helper endpoint to reset a single rental to active for live demo idempotency
+const db = require('./database/db');
+app.post('/api/rentals/:id/reset-active', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await db.run('UPDATE rentals SET return_date = NULL WHERE id = ?', [id]);
+    res.status(200).json({ message: `Rental ${id} set to active.` });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Welcome / Health check route (returns JSON metadata when queried with Accept: application/json)
 app.get('/api', (req, res) => {
   res.status(200).json({

@@ -211,6 +211,9 @@
   // Twist Test 1: Return a rental (200)
   async function runTwistTest1() {
     try {
+      // Ensure Rental 1 is set to active first so Test 1 always yields 200 OK
+      await fetch('/api/rentals/1/reset-active', { method: 'POST' });
+
       const res = await fetch('/rentals/1/return', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
